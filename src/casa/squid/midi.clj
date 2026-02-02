@@ -156,6 +156,7 @@
 
 (defprotocol MidiOps
   (-add-receiver
+    [port callback]
     "Register a MIDI receiver callback
 
     Callback signature is [message millis], with message a byte-array, and
@@ -163,22 +164,21 @@
     System/currentTimeMillis).
 
     This is a low-level protocol method, see [[add-receiver]] for the user-side
-    API."
-    [port callback])
+    API.")
   (-remove-receiver
+    [port callback]
     "Remove a MIDI receiver callback, relies on object identity of the callback
 
     This is a low-level protocol method, see [[add-receiver]] for the user-side
-    API."
-    [port callback])
+    API.")
   (-write
+    [port message offset]
     "Write (send) a MIDI message to the given port
 
     Offset is application specific, for 'direct' (push-based) ports, offset
     should be ignored, and messages are sent immediately (or at the start of the
     next cycle). For pull-based (processing callback), offset is generally in
-    frames, and can be used for precise sequence scheduling."
-    [port message offset]))
+    frames, and can be used for precise sequence scheduling."))
 
 (defonce ^:private receivers (atom {}))
 

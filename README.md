@@ -7,6 +7,11 @@
 
 ## Features
 
+Dependency-free MIDI library for Clojure, contains functionality for
+(de)serializing MIDI messages, a protocol (MidiOps) that is implementation
+independent, making it easier to write MIDI code that is backend-agnostic, and
+an implementation of said protocol backed by `javax.midi`. See `casa.squid/jack`
+for a Jack based implementation.
 
 <!-- installation -->
 ## Installation
