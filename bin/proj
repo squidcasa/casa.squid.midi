@@ -1,0 +1,17 @@
+#!/usr/bin/env bb
+
+(ns proj (:require [lioss.main :as lioss]))
+
+(lioss/main
+ {:license        :mpl
+  :name           "midi"
+  :group-id       "casa.squid"
+  :org-name       "Squid Casa"
+  :org-url        "https://squid.casa"
+  :inception-year 2026
+  :description    ""})
+
+
+;; Local Variables:
+;; mode:clojure
+;; End:
