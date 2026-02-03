@@ -83,6 +83,13 @@
 (defn query-devices []
   (map #(MidiSystem/getMidiDevice %)
        (MidiSystem/getMidiDeviceInfo)))
+(doseq [info (MidiSystem/getMidiDeviceInfo)]
+  (let [device (MidiSystem/getMidiDevice info)]
+    (println "---")
+    (println "Name:       " (.getName info))
+    (println "Vendor:     " (.getVendor info))
+    (println "Description:" (.getDescription info))
+    (println "Class:      " (.getName (class device)))))
 
 (defn find-input-device [name]
   (first (filter (every-pred #(str/includes? (device-name %) name)
@@ -94,17 +101,57 @@
                              can-receive?)
                  (query-devices))))
 
-(defn receiver-callback [f]
+(defn receiver-callback
+  "Create a javax.sound.midi.Receiver that delegates to a callback function.
+
+  Callback receives [message millis] where message is a byte-array and millis is
+  epoch-based timestamp."
+  [f]
   (proxy [Receiver] []
-    (send [^MidiMessage message ^double timestamp]
-      (f (.getMessage message) timestamp))))
+    (send [^MidiMessage message ^long timestamp]
+      ;; javax.sound.midi uses microseconds, convert to milliseconds
+      (f (.getMessage message) (quot timestamp 1000)))
+    (close [])))
 
-(defn set-receiver-impl [port callback]
-  (connect port (receiver-callback callback)))
+(defonce ^:private callback->receiver (atom {}))
 
-(defn write-impl [port message nanos]
-  (send port message ts))
+(defn add-receiver-impl
+  "Register a MIDI receiver callback on a transmitting device/transmitter.
 
-(extend MidiDevice midi/MidiOps {:-set-receiver! set-receiver-impl :-write write-impl})
-(extend Receiver midi/MidiOps {:-write write-impl})
-(extend Transmitter midi/MidiOps {:-set-receiver! set-receiver-impl})
+  Callback signature is [message millis], with message a byte-array, and millis
+  an epoch-based timestamp."
+  [port callback]
+  (let [rcv (receiver-callback callback)
+        tx (transmitter port)]
+    (.setReceiver tx rcv)
+    (swap! callback->receiver assoc callback {:receiver rcv :transmitter tx})))
+
+(defn remove-receiver-impl
+  "Remove a MIDI receiver callback, relies on object identity of the callback."
+  [port callback]
+  (when-let [{:keys [^Receiver receiver ^Transmitter transmitter]} (get @callback->receiver callback)]
+    (.close receiver)
+    (.close transmitter)
+    (swap! callback->receiver dissoc callback)))
+
+(defn write-impl
+  "Write (send) a MIDI message to the given port.
+
+  Offset is ignored for javax.sound.midi (messages are sent immediately)."
+  [port message offset]
+  (send port message -1))
+
+(extend MidiDevice
+  midi/MidiOps
+  {:-add-receiver add-receiver-impl
+   :-remove-receiver remove-receiver-impl
+   :-write write-impl})
+
+(extend Receiver
+  midi/MidiOps
+  {:-write write-impl})
+
+(extend Transmitter
+  midi/MidiOps
+  {:-add-receiver add-receiver-impl
+   :-remove-receiver remove-receiver-impl})

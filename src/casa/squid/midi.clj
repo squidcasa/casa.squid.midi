@@ -154,31 +154,32 @@
 (comment
   (message 0 :note-on 64 127))
 
-(defprotocol MidiOps
-  (-add-receiver
-    [port callback]
-    "Register a MIDI receiver callback
+(defonce __protocols
+  (defprotocol MidiOps
+    (-add-receiver
+      [port callback]
+      "Register a MIDI receiver callback
 
-    Callback signature is [message millis], with message a byte-array, and
-    millis a epoch-based timestamp (can be compared with
-    System/currentTimeMillis).
+      Callback signature is [message millis], with message a byte-array, and
+      millis a epoch-based timestamp (can be compared with
+      System/currentTimeMillis).
 
-    This is a low-level protocol method, see [[add-receiver]] for the user-side
-    API.")
-  (-remove-receiver
-    [port callback]
-    "Remove a MIDI receiver callback, relies on object identity of the callback
+      This is a low-level protocol method, see [[add-receiver]] for the user-side
+      API.")
+    (-remove-receiver
+      [port callback]
+      "Remove a MIDI receiver callback, relies on object identity of the callback
 
-    This is a low-level protocol method, see [[add-receiver]] for the user-side
-    API.")
-  (-write
-    [port message offset]
-    "Write (send) a MIDI message to the given port
+      This is a low-level protocol method, see [[add-receiver]] for the user-side
+      API.")
+    (-write
+      [port message offset]
+      "Write (send) a MIDI message to the given port
 
-    Offset is application specific, for 'direct' (push-based) ports, offset
-    should be ignored, and messages are sent immediately (or at the start of the
-    next cycle). For pull-based (processing callback), offset is generally in
-    frames, and can be used for precise sequence scheduling."))
+      Offset is application specific, for 'direct' (push-based) ports, offset
+      should be ignored, and messages are sent immediately (or at the start of the
+      next cycle). For pull-based (processing callback), offset is generally in
+      frames, and can be used for precise sequence scheduling.")))
 
 (defonce ^:private receivers (atom {}))
 
@@ -230,8 +231,11 @@
 (defn write
   "Write a message to a given port, version with offset is for
   pullback (processing callback based) ports, and is application
-  dependant (typically: frames within the current callback)."
-  ([port message]
-   (-write port message 0))
-  ([port message offset]
-   (-write port message offset)))
+  dependant (typically: frames within the current callback). Message is a
+  vector [channel msg-type & data], with msg-type a keyword.
+  See [[event]]/[[message]]. Use [[-write]] directly if you already have raw
+  bytes you want to send"
+  ([port msg]
+   (-write port (message msg) 0))
+  ([port msg offset]
+   (-write port (message msg) offset)))
