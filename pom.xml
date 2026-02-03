@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>casa.squid</groupId>
   <artifactId>midi</artifactId>
-  <version>0.0.</version>
+  <version>0.1.4</version>
   <name>midi</name>
   <description></description>
-  <url>https://github.com//</url>
+  <url>https://github.com/squidcasa/casa.squid.midi</url>
   <inceptionYear>2026</inceptionYear>
   <organization>
     <name>Squid Casa</name>
@@ -22,10 +22,10 @@
     </license>
   </licenses>
   <scm>
-    <url>https://github.com//</url>
-    <connection>scm:git:git://github.com//.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com//.git</developerConnection>
-    <tag>HEAD</tag>
+    <url>https://github.com/squidcasa/casa.squid.midi</url>
+    <connection>scm:git:git://github.com/squidcasa/casa.squid.midi.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/squidcasa/casa.squid.midi.git</developerConnection>
+    <tag>2ca7083624134efb74c34e2df4b1ac2d8882a481</tag>
   </scm>
   <dependencies></dependencies>
   <build>
@@ -52,7 +52,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <git-revision>HEAD</git-revision>
+              <git-revision>2ca7083624134efb74c34e2df4b1ac2d8882a481</git-revision>
             </manifestEntries>
           </archive>
         </configuration>
